@@ -1,0 +1,36 @@
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "TCC"
+version = "0.0.1"
+dependencies = [
+]
+requires-python = ">=3.12"
+authors = [
+  {name = "Victor Lattaro Volpini", email = "victorlattaro@gmail.com"}
+]
+maintainers = [
+  {name = "Victor Lattaro Volpini", email = "victorlattaro@gmail.com"}
+]
+description = "Modelagem e controle PID e ótimo para o problema do pêndulo sobre um carrinho"
+readme = "README.md"
+license = {file = "LICENSE"}
+keywords = ["Control", "PID"]
+classifiers = [
+  "Development Status :: 4 - Beta",
+  "Programming Language :: Python"
+]
+
+[project.urls]
+Homepage = "https://github.com/lattarov/tcc"
+Documentation = "https://github.com/lattarov/tcc"
+Repository = "https://github.com/lattarov/tcc"
+Changelog = "https://github.com/lattarov/tcc/CHANGELOG"
+
+[project.scripts]
+tcc-cli = "tcc:main_cli"
+
+[project.gui-scripts]
+tcc-gui = "tcc:main_gui"
