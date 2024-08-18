@@ -98,12 +98,13 @@ class MPCController():
         self.x0 = x0
         self.duration = duration
 
-        self.u_max = 10  # Maximum control input (force)
-        self.u_min = -10  # Minimum control input (force)
+        self.u_max = 100  # Maximum control input (force)
+        self.u_min = -100  # Minimum control input (force)
 
-        self.x_mpc = np.zeros((duration, 4))
+        self.x_mpc = np.zeros((duration, len(x0)))
         self.x_mpc[0] = x0
         self.u_mpc_array = []
+        self.setpoints = []
 
         self._get_closed_loop_gain_matrix()
         self._get_closed_loop_state_matrix()
@@ -121,12 +122,14 @@ class MPCController():
         self.closed_loop_model = control.matlab.ss(
             self.a_matrix_closed_loop, sys.B, sys.C, sys.D)
 
-    def control_step(self, i, dt, N=10,):
+    def control_step(self, setpoint, i, dt, N=100,):
         """
         Calculates the control value for the Nth time step.
 
         Parameters
         ----------
+        setpoint : np.float64
+            Setpoint for the control loop.
         i : int
             Simulation step number.
         dt : int
@@ -149,8 +152,9 @@ class MPCController():
         cost = 0
         r_matrix = np.array([[0.01]])  # Input cost, not used.
         constraints = [x[:, 0] == self.x_mpc[i]]
+        self.setpoints.append(np.array([0, setpoint, 0, 0]))
         for k in range(N):
-            cost += cp.quad_form(x[:, k], self.q_matrix) + \
+            cost += cp.quad_form(x[:, k] - self.setpoints[i][0], self.q_matrix) + \
                 cp.quad_form(u[:, k], r_matrix)
             constraints += [x[:, k+1] == self.sys.A @ x[:, k] + self.sys.B @ u[:, k],
                             self.u_min <= u[:, k], u[:, k] <= self.u_max]
@@ -158,6 +162,13 @@ class MPCController():
         # Solve the optimization problem
         prob = cp.Problem(cp.Minimize(cost), constraints)
         prob.solve()
+
+        if prob.status != cp.OPTIMAL:
+            message = f"""Optimization problem not solved optimally \n
+            time step {i}, status: {prob.status}, \n N={N},\n
+            Q={self.q_matrix} \n R={self.r_matrix} \n setpoint={setpoint}"""
+            logger.error(message)
+            raise Exception()
 
         # Apply the first control input
         u_mpc = u.value[:, 0]  # Get the first control input
