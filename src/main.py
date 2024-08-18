@@ -1,3 +1,4 @@
+import logging
 import numpy as np
 import matplotlib.pyplot as plt
 from control.matlab import lsim
@@ -76,3 +77,10 @@ plt.grid()
 
 plt.tight_layout()
 plt.show()
+logging.basicConfig(
+    level=logging.INFO,
+    handlers=[logging.StreamHandler(),
+              logging.FileHandler('tcc.log')],
+    format='[%(asctime)s] {%(pathname)s:%(lineno)d} %(levelname)s - %(message)s',
+    datefmt='%d/%m/%Y-%H:%M:%S'
+)

@@ -2,12 +2,15 @@
 Contains different controller implementations.
 
 """
-
+import logging
 import control.matlab
 import cvxpy as cp
 import numpy as np
 
 from tools.model import sys
+
+
+logger = logging.getLogger(__name__)
 
 
 class PIDController():
@@ -165,3 +168,5 @@ class MPCController():
         u_sim = np.array([u_mpc, u_mpc])  # Control input for simulation
         _, x_next, _ = control.matlab.lsim(sys, u_sim, t_sim, self.x_mpc[i])
         self.x_mpc[i+1] = x_next[-1]
+        logger.info(f"States : {self.x_mpc[i]}")
+        logger.info(f"Control effort : {u_mpc}")

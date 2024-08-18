@@ -1,9 +1,11 @@
 """
 Describes the LTI model of the pole on a cart system.
 """
-
+import logging
 import numpy as np
 from control.matlab import ss
+
+logger = logging.getLogger(__name__)
 
 # System parameters
 m = 0.1  # Mass of the pendulum (kg)
@@ -28,3 +30,5 @@ D = np.zeros((4, 1))
 
 # Create the state-space model
 sys = ss(A, B, C, D)
+
+logger.info(ss)
