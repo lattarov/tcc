@@ -9,7 +9,7 @@ from tools.controllers import MPCController
 
 
 logging.basicConfig(
-    level=logging.INFO,
+    level=logging.DEBUG,
     handlers=[logging.StreamHandler(),
               logging.FileHandler('tcc.log')],
     format='[%(asctime)s] {%(pathname)s:%(lineno)d} %(levelname)s - %(message)s',
@@ -20,12 +20,24 @@ logger = logging.getLogger(__name__)
 
 if __name__ == '__main__':
     # Define initial conditions
-    x0 = np.array([0, 0, np.pi/4, 0])  # Initial position and angle
+    init_pos = np.float32(0)
+    init_speed = np.float32(0)
+    init_angular_position = np.pi/4
+    init_angular_velocity = np.float32(0)
+
+    x0 = np.array([init_pos, init_speed, init_angular_position,
+                   init_angular_velocity])
+
+    logger.info(f"initial position [m] {init_pos}")
+    logger.info(f"initial speed [m/s] {init_speed}")
+    logger.info(f"initial angular position [rad] {init_angular_position}")
+    logger.info(f"initial angular velocity [rad/s] {init_angular_velocity}")
 
     # Define time span for the simulation
-    t = np.linspace(0, 10, 10000)
+    t = np.linspace(0, 1, 100)
     dt = t[1] - t[0]
-    print(dt)
+
+    logger.debug(f"time step size for simulation [s]: {dt}")
 
     # PID gains
     gains = {
