@@ -1,0 +1,29 @@
+@startuml
+
+cloud Ambiente
+
+
+
+rectangle "Sistema Ator-Crítico" {
+
+    rectangle "Ator" as Ator
+
+    rectangle "Crítico" as Crítico
+
+}
+
+
+
+Ambiente --> Ator : Estado <math>s_t</math>
+
+Ator --> Ambiente : Ação <latex>a_t</latex>
+
+Ambiente --> Crítico : Recompensa <latex>R_t</latex>\n Próximo estado <latex>s_{t+1}</latex>
+
+Crítico --> Crítico : Atualizar função valor\n<latex>V_t(s_t)</latex>
+
+Crítico --> Ator : Atualizar política π
+
+
+
+@enduml

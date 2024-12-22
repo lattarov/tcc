@@ -1,0 +1,29 @@
+@startuml
+
+cloud Ambiente
+
+
+
+rectangle "Sistema baseado em política" {
+
+    rectangle "Agente" {
+
+        rectangle "Função de valor\n <latex>V(a)</latex> " as Valor
+
+    }
+
+}
+
+
+
+Ambiente --> Agente : Estado <latex>S_t</latex>
+
+Agente --> Ambiente : Ação <latex>A_t</latex>
+
+Ambiente --> Agente : Recompensa <latex>R_t</latex>\nPróximo Estado <latex>S_{t+1}</latex>
+
+Valor --> Valor : Atualizar função de Valor
+
+
+
+@enduml
