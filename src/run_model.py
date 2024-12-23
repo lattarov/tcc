@@ -36,3 +36,5 @@ if __name__ == '__main__':
 
         next_state, reward, terminated, truncated, _ = env.step(action)
         state = next_state
+
+    env.close()

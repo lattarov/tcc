@@ -1,3 +1,4 @@
+import environment
 import gymnasium as gym
 import numpy as np
 import torch
@@ -47,7 +48,9 @@ class ReplayBuffer:
 
 # Train the agent
 def train_agent():
-    env = gym.make('CartPole-v1')
+    # env = gym.make('CartPole-v1')
+    env = environment.CustomCartPoleEnv()
+
     state_dim = env.observation_space.shape[0]
     action_dim = env.action_space.n
 
@@ -117,8 +120,6 @@ def train_agent():
                 loss.backward()
                 optimizer.step()
 
-            done = truncated or terminated
-
         # Update epsilon
         epsilon = max(epsilon * epsilon_decay, epsilon_min)
         rewards_list.append(total_reward)
@@ -131,7 +132,12 @@ def train_agent():
             file_name = "neural_networks/cartpole_q_network.pth"
             torch.save(q_network.state_dict(), file_name)
 
-        logger.info(f"Episode {episode + 1}/{episodes}, Reward: {total_reward}, max reward: {max(rewards_list)}")
+        logger.debug(f"Episode {episode + 1}/{episodes}, Reward: {total_reward}, max reward: {max(rewards_list)}")
+
+        # done = truncated or terminated # we want the simulation to keep
+        # going past the 1000 steps, which does not happen when truncated is
+        # called.
+        done = terminated
 
 
     # Save the trained network
@@ -176,7 +182,7 @@ if __name__ == "__main__":
 
     # Check if GPU is available
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-    logger.info(f"Using device: {device} for calculation")
+    logger.debug(f"Using device: {device} for calculation")
 
     rewards = train_agent()
     plot_results(rewards)

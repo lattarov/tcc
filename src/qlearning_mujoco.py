@@ -1,4 +1,4 @@
-
+import environment
 import gym
 from collections import deque
 import random
@@ -14,20 +14,26 @@ device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
 # Set up logger
 logger = logging.getLogger("MAIN")
-logger.setLevel(logging.INFO)
+logger.setLevel(logging.DEBUG)
 
 class CriticNetwork(nn.Module):
     def __init__(self, state_dim, action_dim):
         super(CriticNetwork, self).__init__()
         self.fc1 = nn.Linear(state_dim + action_dim, 256)
         self.fc2 = nn.Linear(256, 128)
-        self.fc3 = nn.Linear(128, 1)
+        self.fc3 = nn.Linear(128, 128)
+        self.fc4 = nn.Linear(128, 128)
+        self.fc5 = nn.Linear(128, 64)
+        self.fc6 = nn.Linear(64, 1)
 
     def forward(self, state, action):
         x = torch.cat([state, action], dim=1)
         x = torch.relu(self.fc1(x))
         x = torch.relu(self.fc2(x))
-        return self.fc3(x)
+        x = torch.relu(self.fc3(x))
+        x = torch.relu(self.fc4(x))
+        x = torch.relu(self.fc5(x))
+        return self.fc6(x)
 
 
 class ActorNetwork(nn.Module):
@@ -61,7 +67,8 @@ class ReplayBuffer:
 
 
 def train_agent():
-    env = gym.make('InvertedPendulum-v4', render_mode="human")
+    # env = gym.make('invertedpendulum-v4', render_mode="human")
+    env = environmnent.CustomCartPoleEnv()
     state_dim = env.observation_space.shape[0]
     action_dim = env.action_space.shape[0]
     max_action = env.action_space.high[0]
@@ -100,14 +107,12 @@ def train_agent():
             action = np.clip(action, -max_action, max_action)
 
             next_state, reward, terminated, truncated, _ = env.step(action)
-            done = terminated or truncated
 
             total_reward += reward
 
             # Store transition
-            replay_buffer.add((state, action, reward, next_state, done))
+            replay_buffer.add((state, action, reward, next_state, terminated or truncated))
             state = next_state
-
 
             # Train if enough samples are available
             if len(replay_buffer) >= batch_size:
@@ -145,24 +150,24 @@ def train_agent():
                 for param, target_param in zip(critic.parameters(), critic_target.parameters()):
                     target_param.data.copy_(tau * param.data + (1 - tau) * target_param.data)
 
-            if done:
+            if terminated or truncated:
                 break
 
         rewards_list.append(total_reward)
 
-        if total_reward == max(rewards_list):
-            logger.info("models have been updated")
+        is_new_maximum_reward = total_reward == max(rewards_list)
+        model_update_message = " - Best models models have been updated" if is_new_maximum_reward else ""
+
+        if is_new_maximum_reward:
             torch.save(actor, "neural_networks/mojuco_actor.pth")
             torch.save(critic, "neural_networks/mojuco_critic.pth")
 
+        logger.debug(f"Episode {episode + 1}: Reward {total_reward}, MaxReward: {max(rewards_list)}{model_update_message}")
 
-        logger.info(f"Episode {episode + 1}: Reward {total_reward}, max reward: {max(rewards_list)}")
 
     return rewards_list
 
 
-
-# Plot results
 def plot_results(rewards):
     plt.plot(rewards, label="Episode Reward")
     plt.xlabel("Episode")
@@ -176,7 +181,7 @@ def plot_results(rewards):
 def setup_logging(logger: logging.Logger):
     # Stream handler for stdout with INFO level
     console_handler = logging.StreamHandler(sys.stdout)
-    console_handler.setLevel(logging.INFO)
+    console_handler.setLevel(logging.DEBUG)
     console_formatter = logging.Formatter(
         '%(asctime)s - %(name)s - %(levelname)s - %(message)s')
     console_handler.setFormatter(console_formatter)
