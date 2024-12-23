@@ -61,7 +61,7 @@ class ReplayBuffer:
 
 
 def train_agent():
-    env = gym.make('InvertedDoublePendulum-v4', render_mode="human")
+    env = gym.make('InvertedPendulum-v4', render_mode="human")
     state_dim = env.observation_space.shape[0]
     action_dim = env.action_space.shape[0]
     max_action = env.action_space.high[0]
