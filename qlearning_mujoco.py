@@ -151,8 +151,9 @@ def train_agent():
         rewards_list.append(total_reward)
 
         if total_reward == max(rewards_list):
-            torch.save(actor.state_dict(), "neural_networks/mojuco_actor.pth")
-            torch.save(critic.state_dict(), "neural_networks/mojuco_critic.pth")
+            logger.info("models have been updated")
+            torch.save(actor, "neural_networks/mojuco_actor.pth")
+            torch.save(critic, "neural_networks/mojuco_critic.pth")
 
 
         logger.info(f"Episode {episode + 1}: Reward {total_reward}, max reward: {max(rewards_list)}")
