@@ -67,8 +67,7 @@ class ReplayBuffer:
 
 
 def train_agent():
-    # env = gym.make('invertedpendulum-v4', render_mode="human")
-    env = environmnent.CustomCartPoleEnv()
+    env = gym.make('InvertedPendulum-v4', render_mode="human")
     state_dim = env.observation_space.shape[0]
     action_dim = env.action_space.shape[0]
     max_action = env.action_space.high[0]
@@ -86,7 +85,7 @@ def train_agent():
     critic_optimizer = optim.Adam(critic.parameters(), lr=1e-3)
     replay_buffer = ReplayBuffer(100000)
 
-    episodes = 1000
+
     batch_size = 64
     gamma = 0.99
     tau = 0.005
@@ -107,6 +106,8 @@ def train_agent():
             action = np.clip(action, -max_action, max_action)
 
             next_state, reward, terminated, truncated, _ = env.step(action)
+
+            reward = reward - (state[0] - 0)**2 - 0.1*action[0]**2 - (0 - state[2])**2
 
             total_reward += reward
 
