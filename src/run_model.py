@@ -7,39 +7,15 @@ import pandas as pd
 import torch
 import matplotlib.pyplot as plt
 
-from qlearning_mujoco import ActorNetwork
+from controllers.actor_critic import ActorCriticAgent
+from reinforcement_learning.actor import ActorNetwork  # TODO: move elsewhere
+
 
 SEED = 42
 
+SIMULATION_STEPS = 2000
+
 max_action = 3
-
-class ActorCriticAgent:
-    def __init__(self, actor):
-        self.actor = torch.load(args.model, weights_only=False)
-        self.actor.eval()
-
-    def control(self, states):
-        state_tensor = torch.FloatTensor(states).unsqueeze(0).to(device)
-        action = self.actor(state_tensor).detach().cpu().numpy()[0]
-        action = np.clip(action, -max_action, max_action)
-        return action
-
-class PIDController:
-    def __init__(self):
-        self.kp = 1
-        self.kd = 0.01
-        self.ki = 0
-        self.last_error = 0
-        self.total_error = 0
-
-    def control(self, ref, angle):
-        error = angle - ref
-        d_error = error - self.last_error
-        self.last_error = error
-        self.total_error = self.total_error + error
-        action = self.kp * error + self.kd * d_error + self.ki*self.total_error
-        action = np.clip(action, -max_action, max_action)
-        return action
 
 
 if __name__ == '__main__':
@@ -50,28 +26,18 @@ if __name__ == '__main__':
     parser.add_argument("model")
     args = parser.parse_args()
 
-    env = gym.make('InvertedPendulum-v4', render_mode="human", max_episode_steps=2000)
-
-    state_dim = env.observation_space.shape[0]
-    action_dim = env.action_space.shape[0]
-    max_action = env.action_space.high[0]
+    env = gym.make('InvertedPendulum-v4', render_mode="human", max_episode_steps=SIMULATION_STEPS)
 
     states, _ = env.reset(seed=SEED)
-
-    # env.data.qpos[:] = [0.2, 0]  # directly modify qpos values
 
     # initialize variables
     truncated = terminated = False
     state_buff = list()
-    # pid = PIDController()
     controller = ActorCriticAgent(args.model)
-
-    step = 0
 
     # main loop
     while True:
 
-        # action = controller.control(states) + 0.1*np.sin(step/100)
         action = controller.control(states)
 
         next_state, reward, terminated, truncated, _ = env.step(action)
@@ -80,15 +46,15 @@ if __name__ == '__main__':
 
         states = next_state
 
-        step += 1
-
         if truncated or terminated:
             states, _ = env.reset(seed=SEED)
             env.close()
             break
 
     # put data in a pd.DataFrame to simplify analysis
-    df = pd.DataFrame(state_buff, columns=["x", "theta", "x_dot", "theta_dot", "action"])
+    time = np.linspace(0, SIMULATION_STEPS, endpoint=False)
+
+    df = pd.DataFrame([time.transpose(), *state_buff], columns=["time", "x", "theta", "x_dot", "theta_dot", "action"])
 
     # plotting results
     df.plot()
