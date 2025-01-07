@@ -26,7 +26,7 @@ NOISE_SCALE = 0.1
 
 
 def train_agent():
-    env = gym.make('InvertedPendulum-v4', render_mode="human")
+    env = gym.make("InvertedPendulum-v4", render_mode="human")
     state_dim = env.observation_space.shape[0]
     action_dim = env.action_space.shape[0]
     max_action = env.action_space.high[0]
@@ -60,17 +60,26 @@ def train_agent():
 
             next_state, reward, terminated, truncated, _ = env.step(action)
 
-            reward = reward - (state[0] - 0)**2 - 0.1*action[0]**2 - (0 - state[2])**2
+            reward = (
+                reward
+                - (state[0] - 0) ** 2
+                - 0.1 * action[0] ** 2
+                - (0 - state[2]) ** 2
+            )
 
             total_reward += reward
 
             # Store transition
-            replay_buffer.add((state, action, reward, next_state, terminated or truncated))
+            replay_buffer.add(
+                (state, action, reward, next_state, terminated or truncated)
+            )
             state = next_state
 
             # Train if enough samples are available
             if len(replay_buffer) >= BATCH_SIZE:
-                states, actions, rewards, next_states, dones = replay_buffer.sample(BATCH_SIZE)
+                states, actions, rewards, next_states, dones = replay_buffer.sample(
+                    BATCH_SIZE
+                )
 
                 states_tensor = torch.FloatTensor(states).to(device)
                 actions_tensor = torch.FloatTensor(actions).to(device)
@@ -81,7 +90,9 @@ def train_agent():
                 # Critic loss
                 with torch.no_grad():
                     next_actions = actor_target(next_states_tensor)
-                    target_q = rewards_tensor + GAMMA * (1 - dones_tensor) * critic_target(next_states_tensor, next_actions)
+                    target_q = rewards_tensor + GAMMA * (
+                        1 - dones_tensor
+                    ) * critic_target(next_states_tensor, next_actions)
                 current_q = critic(states_tensor, actions_tensor)
                 critic_loss = nn.MSELoss()(current_q, target_q)
 
@@ -99,10 +110,18 @@ def train_agent():
                 actor_optimizer.step()
 
                 # Soft update target networks
-                for param, target_param in zip(actor.parameters(), actor_target.parameters()):
-                    target_param.data.copy_(TAU * param.data + (1 - TAU) * target_param.data)
-                for param, target_param in zip(critic.parameters(), critic_target.parameters()):
-                    target_param.data.copy_(TAU * param.data + (1 - TAU) * target_param.data)
+                for param, target_param in zip(
+                    actor.parameters(), actor_target.parameters()
+                ):
+                    target_param.data.copy_(
+                        TAU * param.data + (1 - TAU) * target_param.data
+                    )
+                for param, target_param in zip(
+                    critic.parameters(), critic_target.parameters()
+                ):
+                    target_param.data.copy_(
+                        TAU * param.data + (1 - TAU) * target_param.data
+                    )
 
             if terminated or truncated:
                 break
@@ -110,14 +129,17 @@ def train_agent():
         rewards_list.append(total_reward)
 
         is_new_maximum_reward = total_reward == max(rewards_list)
-        model_update_message = " - Best models models have been updated" if is_new_maximum_reward else ""
+        model_update_message = (
+            " - Best models models have been updated" if is_new_maximum_reward else ""
+        )
 
         if is_new_maximum_reward:
             torch.save(actor, "neural_networks/mojuco_actor.pth")
             torch.save(critic, "neural_networks/mojuco_critic.pth")
 
-        logger.debug(f"Episode {episode + 1}: Reward {total_reward}, MaxReward: {max(rewards_list)}{model_update_message}")
-
+        logger.debug(
+            f"Episode {episode + 1}: Reward {total_reward}, MaxReward: {max(rewards_list)}{model_update_message}"
+        )
 
     return rewards_list
 
@@ -137,15 +159,17 @@ def setup_logging(logger: logging.Logger):
     console_handler = logging.StreamHandler(sys.stdout)
     console_handler.setLevel(logging.DEBUG)
     console_formatter = logging.Formatter(
-        '%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+        "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+    )
     console_handler.setFormatter(console_formatter)
     logger.addHandler(console_handler)
 
     # File handler for file with DEBUG level
-    file_handler = logging.FileHandler('log.log')
+    file_handler = logging.FileHandler("log.log")
     file_handler.setLevel(logging.DEBUG)
     file_formatter = logging.Formatter(
-        '%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+        "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+    )
     file_handler.setFormatter(file_formatter)
     logger.addHandler(file_handler)
 
@@ -153,7 +177,6 @@ def setup_logging(logger: logging.Logger):
 
 
 if __name__ == "__main__":
-
     logger = setup_logging(logger)
 
     # Check if GPU is available

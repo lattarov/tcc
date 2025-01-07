@@ -1,7 +1,7 @@
 """Creates adaptors for the different controllers."""
 
 
-class Adapter():
+class Adapter:
     """
     Adapter class to allow using different controllers (RL, PID, MPC, etc.) in the simulation
 
@@ -23,7 +23,7 @@ class Adapter():
         self._max_threshold_action = 3
         self._min_threshold_action = -3
 
-    def get_control(self, state:np.array):
+    def get_control(self, state: np.array):
         """calculates the control effort for a given state."""
 
         if isinstance(_controller, torch.nn.Module):

@@ -1,7 +1,7 @@
 """Implements a base class for all controllers."""
 
 
-class ControllerABC():
+class ControllerABC:
     """A controller abstract base class (ABC)."""
 
     def __init__(self):

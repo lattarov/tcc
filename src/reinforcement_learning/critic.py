@@ -10,11 +10,9 @@ class CriticNetwork(nn.Module):
     """The critic neural network."""
 
     def __init__(self):
-        """Define the topology of the NN.
-        """
+        """Define the topology of the NN."""
         super(CriticNetwork, self).__init__()
-        self.fc1 = nn.Linear(env.STATE_DIM +
-                             env.ACTION_DIM, 256)
+        self.fc1 = nn.Linear(env.STATE_DIM + env.ACTION_DIM, 256)
         self.fc2 = nn.Linear(256, 128)
         self.fc3 = nn.Linear(128, 128)
         self.fc4 = nn.Linear(128, 128)
