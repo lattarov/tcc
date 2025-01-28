@@ -14,9 +14,7 @@ from reinforcement_learning.actor import ActorNetwork  # TODO: move elsewhere
 
 SEED = 42
 
-SIMULATION_STEPS = 200
-
-max_action = 3
+SIMULATION_STEPS = 2000
 
 
 if __name__ == "__main__":
@@ -24,15 +22,16 @@ if __name__ == "__main__":
 
     parser = argparse.ArgumentParser()
     parser.add_argument("controller")
+    parser.add_argument("render", action="store_true")
     args = parser.parse_args()
 
     env = gym.make(
         "InvertedPendulum-v4",
-        # render_mode="human",
+        render_mode="human" if args.render else False,
         max_episode_steps=SIMULATION_STEPS
     )
 
-    states, _ = env.reset(seed=SEED)
+    states, _ = env.reset()
 
     # initialize variables
     truncated = terminated = False
@@ -70,9 +69,12 @@ if __name__ == "__main__":
     )
 
     # plotting results
-    df.plot(x="time", grid=True)
-    df.plot(x="time", y="x", title="position", kind='scatter', grid=True)
-    df.plot(x="time", y="theta", title="angle", kind='scatter', grid=True)
+    df.plot(x="time", y="x", kind='scatter', grid=True, xlabel="Tempo [s]", ylabel="Posição [m]")
+
+    df.plot.scatter(x='x', y="theta", c='time', grid=True, colormap='viridis', s=100, xlabel="Posição [m]", ylabel=r"$\theta$ [rad]")
+
+    df.plot(x="time", y="theta", kind='scatter', grid=True, xlabel="Tempo [s]", ylabel=r"$\theta$ [rad]")
+
     plt.show()
 
     # performance statistics
