@@ -1,0 +1,44 @@
+@startuml
+
+' Definir classes para as redes neurais e componentes relacionados
+class ActorNetwork {
+    +forward(state: Tensor) : Tensor
+}
+
+class CriticNetwork {
+    +forward(state: Tensor, action: Tensor) : Tensor
+}
+
+class ReplayBuffer {
+    +add(state, action, reward, next_state, done) : void
+    +sample(batch_size) : Tuple[Tensor]
+}
+
+class Logger {
+    +debug(msg: String) : void
+    +info(msg: String) : void
+    +setLevel(level: String) : void
+}
+
+' Definir função principal
+class Main {
+    +train_agent() : List[float]
+    +plot_results(rewards: List[float]) : void
+    +setup_logging(logger: Logger) : Logger
+}
+
+' Relacionamentos e interações
+Main --> ActorNetwork : "usa"
+Main --> CriticNetwork : "usa"
+Main --> ReplayBuffer : "usa"
+Main --> Logger : "usa"
+ActorNetwork --> CriticNetwork : "interage com"
+CriticNetwork --> ReplayBuffer : "interage com"
+
+' Fluxo de ação
+Main -> ActorNetwork : "cria ator e alvo"
+Main -> CriticNetwork : "cria crítico e alvo"
+Main -> ReplayBuffer : "inicializa"
+Main -> Logger : "configura"
+
+@enduml

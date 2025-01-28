@@ -1,0 +1,41 @@
+@startuml
+actor Usuário
+participant Principal as "main"
+participant Logger
+participant Ambiente as "Environment"
+participant Ator as "Actor"
+participant Crítico as "Critic"
+participant "BufferReplay" as ReplayBuffer
+participant Plotador as "MatPlotLib"
+
+Usuário -> Principal: Executar o script
+Principal -> Logger: Configurar logging
+Principal -> Logger: Registrar informações do dispositivo
+Principal -> Ambiente: Criar InvertedPendulum-v4
+loop Treinar Agente (N episódios)
+    Principal -> Ambiente: Resetar ambiente
+    loop Passos do episódio
+        Principal -> Ator: Obter ação com ruído
+        Principal -> Ambiente: Executar ação
+        Ambiente --> Principal: Retornar próximo estado, recompensa, finalizado
+
+        Principal -> ReplayBuffer: Armazenar transição
+        alt ReplayBuffer tem amostras suficientes
+            Principal -> ReplayBuffer: Amostrar transições
+            Principal -> Crítico: Calcular perda do crítico
+            Principal -> Ator: Calcular perda do ator
+            Principal -> Crítico: Atualizar rede do crítico
+            Principal -> Ator: Atualizar rede do ator
+            Principal -> Ator: Atualizar suavemente alvos do ator
+            Principal -> Crítico: Atualizar suavemente alvos do crítico
+        end
+    end
+    Principal -> Logger: Registrar recompensa
+    alt Nova recompensa máxima
+        Principal -> Ator: Salvar melhor modelo do ator
+        Principal -> Crítico: Salvar melhor modelo do crítico
+        Principal -> Logger: Registrar atualização do modelo
+    end
+end
+Principal -> Plotador: Traçar recompensas e salvar imagem
+@enduml

@@ -1,0 +1,46 @@
+@startuml
+' Definir classes para os componentes principais do script
+class ActorCriticAgent {
+    +control(states: Tensor) : Tensor
+}
+
+class PIDController {
+    +control(states: Tensor) : Tensor
+}
+
+class ActorNetwork {
+    +forward(state: Tensor) : Tensor
+}
+
+class Logger {
+    +info(msg: String) : void
+}
+
+class GymEnv {
+    +reset() : Tuple
+    +step(action: Tensor) : Tuple
+}
+
+class Simulation {
+    +run_simulation(controller: String, render: bool) : void
+}
+
+' Relacionamentos e interações
+Simulation --> ActorCriticAgent : "usa"
+Simulation --> PIDController : "usa"
+Simulation --> GymEnv : "usa"
+Simulation --> ActorNetwork : "usa"
+Simulation --> Logger : "usa"
+ActorCriticAgent --> ActorNetwork : "usa"
+PIDController --> GymEnv : "usa"
+GymEnv --> Simulation : "interage com"
+Logger --> Simulation : "log de desempenho"
+
+
+' Fluxo de ação
+Simulation -> GymEnv : "cria ambiente de simulação"
+Simulation -> ActorCriticAgent : "cria agente ActorCritic"
+Simulation -> PIDController : "cria controlador PID"
+Simulation -> Logger : "exibe e registra resultados"
+
+@enduml
