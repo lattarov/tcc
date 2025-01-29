@@ -3,7 +3,7 @@
 import torch.nn as nn
 import torch
 
-import reinforcement_learning.environment as env
+import environment as env
 
 
 class CriticNetwork(nn.Module):

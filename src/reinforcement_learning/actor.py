@@ -2,19 +2,19 @@
 
 import torch.nn as nn
 import torch
-import reinforcement_learning.environment as env
+import environment as env
 
 
 class ActorNetwork(nn.Module):
     """The actor neural network."""
 
-    def __init__(self, state_dim, action_dim, max_action):
+    def __init__(self):
         """Define the topology of the NN."""
         super(ActorNetwork, self).__init__()
         self.fc1 = nn.Linear(env.STATE_DIM, 256)
         self.fc2 = nn.Linear(256, 128)
         self.fc3 = nn.Linear(128, env.ACTION_DIM)
-        self.max_action = max_action
+        self.max_action = env.MAX_ACTION
 
     def forward(self, state):
         """Forward propagation through the network."""

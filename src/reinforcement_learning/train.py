@@ -1,4 +1,4 @@
-import gymnasium as gym
+import environment as env
 import torch
 import torch.optim as optim
 import torch.nn as nn
@@ -25,40 +25,32 @@ TAU = 0.005
 NOISE_SCALE = 0.1
 
 
-def train_agent():
-    env = gym.make("InvertedPendulum-v4", render_mode="human")
-    state_dim = env.observation_space.shape[0]
-    action_dim = env.action_space.shape[0]
-    max_action = env.action_space.high[0]
-
+def train_agent(rewards:list, losses_critic:list, losses_actor:list):
     # Initialize networks
-    actor = ActorNetwork(state_dim, action_dim, max_action).to(device)
-    actor_target = ActorNetwork(state_dim, action_dim, max_action).to(device)
+    actor = ActorNetwork().to(device)
+    actor_target = ActorNetwork().to(device)
     actor_target.load_state_dict(actor.state_dict())
 
-    critic = CriticNetwork(state_dim, action_dim).to(device)
-    critic_target = CriticNetwork(state_dim, action_dim).to(device)
+    critic = CriticNetwork().to(device)
+    critic_target = CriticNetwork().to(device)
     critic_target.load_state_dict(critic.state_dict())
 
     actor_optimizer = optim.Adam(actor.parameters(), lr=1e-4)
     critic_optimizer = optim.Adam(critic.parameters(), lr=1e-3)
     replay_buffer = ReplayBuffer(100000)
 
-    rewards_list = []
-
     for episode in range(EPISODES):
-        state, _ = env.reset()
-        env.render()
+        state, _ = env.env.reset()
         total_reward = 0
 
         while True:
             # Add noise for exploration
             state_tensor = torch.FloatTensor(state).unsqueeze(0).to(device)
             action = actor(state_tensor).detach().cpu().numpy()[0]
-            action += NOISE_SCALE * np.random.normal(size=action_dim)
-            action = np.clip(action, -max_action, max_action)
+            action += NOISE_SCALE * np.random.normal(size=env.ACTION_DIM)
+            action = np.clip(action, -env.MAX_ACTION, env.MAX_ACTION)
 
-            next_state, reward, terminated, truncated, _ = env.step(action)
+            next_state, reward, terminated, truncated, _ = env.env.step(action)
 
             reward = (
                 reward
@@ -66,7 +58,6 @@ def train_agent():
                 - 0.1 * action[0] ** 2
                 - (0 - state[2]) ** 2
             )
-
             total_reward += reward
 
             # Store transition
@@ -77,15 +68,15 @@ def train_agent():
 
             # Train if enough samples are available
             if len(replay_buffer) >= BATCH_SIZE:
-                states, actions, rewards, next_states, dones = replay_buffer.sample(
+                rp_states, rp_actions, rp_rewards, rp_next_states, rp_dones = replay_buffer.sample(
                     BATCH_SIZE
                 )
 
-                states_tensor = torch.FloatTensor(states).to(device)
-                actions_tensor = torch.FloatTensor(actions).to(device)
-                rewards_tensor = torch.FloatTensor(rewards).unsqueeze(1).to(device)
-                next_states_tensor = torch.FloatTensor(next_states).to(device)
-                dones_tensor = torch.FloatTensor(dones).unsqueeze(1).to(device)
+                states_tensor = torch.FloatTensor(rp_states).to(device)
+                actions_tensor = torch.FloatTensor(rp_actions).to(device)
+                rewards_tensor = torch.FloatTensor(rp_rewards).unsqueeze(1).to(device)
+                next_states_tensor = torch.FloatTensor(rp_next_states).to(device)
+                dones_tensor = torch.FloatTensor(rp_dones).unsqueeze(1).to(device)
 
                 # Critic loss
                 with torch.no_grad():
@@ -95,6 +86,7 @@ def train_agent():
                     ) * critic_target(next_states_tensor, next_actions)
                 current_q = critic(states_tensor, actions_tensor)
                 critic_loss = nn.MSELoss()(current_q, target_q)
+                losses_critic.append(critic_loss.cpu().detach().numpy())
 
                 # Optimize critic
                 critic_optimizer.zero_grad()
@@ -103,6 +95,8 @@ def train_agent():
 
                 # Actor loss
                 actor_loss = -critic(states_tensor, actor(states_tensor)).mean()
+                losses_actor.append(actor_loss.cpu().detach().numpy())
+
 
                 # Optimize actor
                 actor_optimizer.zero_grad()
@@ -126,9 +120,9 @@ def train_agent():
             if terminated or truncated:
                 break
 
-        rewards_list.append(total_reward)
+        rewards.append(total_reward)
 
-        is_new_maximum_reward = total_reward == max(rewards_list)
+        is_new_maximum_reward = total_reward == max(rewards)
         model_update_message = (
             " - Best models models have been updated" if is_new_maximum_reward else ""
         )
@@ -138,20 +132,35 @@ def train_agent():
             torch.save(critic, "neural_networks/mojuco_critic.pth")
 
         logger.debug(
-            f"Episode {episode + 1}: Reward {total_reward}, MaxReward: {max(rewards_list)}{model_update_message}"
+            f"Episode {episode + 1}: Reward {total_reward}, MaxReward: {max(rewards)}{model_update_message}"
         )
 
-    return rewards_list
 
-
-def plot_results(rewards):
-    plt.plot(rewards, label="Episode Reward")
-    plt.xlabel("Episode")
-    plt.ylabel("Reward")
-    plt.title("Training Performance")
+def plot_results(rewards, losses_critic, losses_actor):
+    plt.figure(1)
+    plt.scatter(rewards)
+    plt.xlabel("Episódio [N°]")
+    plt.ylabel("Recompensa []")
+    plt.grid()
     plt.legend()
     plt.show()
-    plt.savefig("mujoco.png")
+    # plt.savefig("mujoco.png")
+
+    plt.figure(2)
+    plt.scatter(losses_critic)
+    plt.xlabel("Episódio [N°]")
+    plt.ylabel("Perda rede critico []")
+    plt.grid()
+    plt.legend()
+    plt.show()
+
+    plt.figure(3)
+    plt.scatter(losses_actor)
+    plt.xlabel("Episódio [N°]")
+    plt.ylabel("Perda rede ator []")
+    plt.grid()
+    plt.legend()
+    plt.show()
 
 
 def setup_logging(logger: logging.Logger):
@@ -183,5 +192,12 @@ if __name__ == "__main__":
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     logger.info(f"Using device {device} for calculation")
 
-    rewards = train_agent()
-    plot_results(rewards)
+    rewards = []
+    losses_critic = []
+    losses_actor = []
+
+    try:
+        train_agent(rewards, losses_critic, losses_actor)
+    except KeyboardInterrupt:
+        logger.info("keyboard interrupt.")
+        plot_results(rewards, losses_critic, losses_actor)
