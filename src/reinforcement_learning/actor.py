@@ -2,7 +2,6 @@
 
 import torch.nn as nn
 import torch
-import environment as env
 
 
 class ActorNetwork(nn.Module):
