@@ -22,6 +22,7 @@ if __name__ == "__main__":
 
     parser = argparse.ArgumentParser()
     parser.add_argument("controller")
+    parser.add_argument("-impulse", action="store_false")
     parser.add_argument("render", action="store_false")
     args = parser.parse_args()
 
@@ -41,6 +42,11 @@ if __name__ == "__main__":
                    "RL":  ActorCriticAgent("neural_networks/mojuco_actor.pth")}
 
     controller = controllers[args.controller]
+
+    if args.impulse:
+        action = [2]
+
+        next_state, reward, terminated, truncated, _ = env.step(action)
 
     # main loop
     nb_steps = 0
