@@ -1,0 +1,36 @@
+@startuml
+
+actor Usuario
+
+participant Script
+participant GymEnv
+participant PIDController
+participant ActorCriticAgent
+participant ActorNetwork
+participant Pandas
+participant Matplotlib
+participant Numpy
+
+Usuario -> Script : executa script
+Script -> argparse : processa argumentos
+Script -> torch : configura dispositivo
+Script -> GymEnv : cria ambiente de simulação
+Script -> PIDController : instancia controlador PID
+Script -> ActorCriticAgent : instancia agente RL
+
+alt Usando PIDController
+    Script -> PIDController : controla o sistema
+end
+
+alt Usando ActorCriticAgent
+    Script -> ActorCriticAgent : controla o sistema
+    ActorCriticAgent -> ActorNetwork : usa rede neural ator
+end
+
+Script -> GymEnv : aplica ação e recebe próximo estado
+Script -> Pandas : armazena dados da simulação
+Script -> Matplotlib : plota gráficos
+Script -> Numpy : calcula erro médio quadrático
+Script -> Usuario : exibe estatísticas
+
+@enduml
