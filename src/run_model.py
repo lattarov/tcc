@@ -80,8 +80,9 @@ if __name__ == "__main__":
     # performance statistics
     def angle_mean_squared_error(df: pd.DataFrame) -> float:
         reference = np.zeros(shape=len(df))
-        mean_squared_error = np.sum(np.square(reference - df["theta"])/len(df))
-        return mean_squared_error
+        mean_squared_error_theta = np.sum(np.square(reference - df["theta"]))/len(df)
+        mean_squared_error_x = np.sum(np.square(reference - df["x"]))/len(df)
+        return [mean_squared_error_theta, mean_squared_error_x]
 
     print(f"Mean squared error for {args.controller}: \
         {angle_mean_squared_error(df)}")
