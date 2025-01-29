@@ -22,12 +22,12 @@ if __name__ == "__main__":
 
     parser = argparse.ArgumentParser()
     parser.add_argument("controller")
-    parser.add_argument("render", action="store_true")
+    parser.add_argument("render", action="store_false")
     args = parser.parse_args()
 
     env = gym.make(
         "InvertedPendulum-v4",
-        render_mode="human" if args.render else False,
+        render_mode=None if not args.render else "human",
         max_episode_steps=SIMULATION_STEPS
     )
 
