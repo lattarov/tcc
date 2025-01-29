@@ -1,0 +1,5 @@
+
+Mean squared error for RL:         [2.8573008392604844e-05, 0.0054187093306184205]
+Mean squared error for PID:         [0.0001534423734068016, 0.0004622776571685927]
+Mean squared error for RL:         [3.3731741137250854e-06, 0.005480421954478394]
+Mean squared error for PID:         [2.842410243225979e-06, 6.96509352184744e-05]
