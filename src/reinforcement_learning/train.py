@@ -137,7 +137,7 @@ def train_agent(rewards:list, losses_critic:list, losses_actor:list):
 
 def plot_results(rewards, losses_critic, losses_actor):
     plt.figure(1)
-    plt.scatter(rewards)
+    plt.plot(rewards, "o")
     plt.xlabel("Episódio [N°]")
     plt.ylabel("Recompensa []")
     plt.grid()
@@ -146,16 +146,16 @@ def plot_results(rewards, losses_critic, losses_actor):
     # plt.savefig("mujoco.png")
 
     plt.figure(2)
-    plt.scatter(losses_critic)
-    plt.xlabel("Episódio [N°]")
+    plt.plot(losses_critic, "o")
+    plt.xlabel("Passo [N°]")
     plt.ylabel("Perda rede critico []")
     plt.grid()
     plt.legend()
     plt.show()
 
     plt.figure(3)
-    plt.scatter(losses_actor)
-    plt.xlabel("Episódio [N°]")
+    plt.plot(losses_actor, "o")
+    plt.xlabel("Passo [N°]")
     plt.ylabel("Perda rede ator []")
     plt.grid()
     plt.legend()
