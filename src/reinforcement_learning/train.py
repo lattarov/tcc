@@ -54,9 +54,8 @@ def train_agent(rewards:list, losses_critic:list, losses_actor:list):
 
             reward = (
                 reward
-                - (state[0] - 0) ** 2
-                - 0.1 * action[0] ** 2
-                - (0 - state[2]) ** 2
+                - (state[0]) ** 2
+                - (state[1]) ** 2
             )
             total_reward += reward
 
