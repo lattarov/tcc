@@ -75,14 +75,15 @@ if __name__ == "__main__":
     )
 
     # plotting results
+    context = "_impulse" if args.impulse else ""
     df.plot(x="time", y="x", kind='scatter', grid=True, xlabel="Tempo [s]", ylabel="Posição [m]")
-    plt.savefig(f"docs/imgs/{args.controller}_x")
+    plt.savefig(f"docs/imgs/{args.controller}{context}_x")
 
     df.plot.scatter(x='x', y="theta", c='time', grid=True, colormap='viridis', s=100, xlabel="Posição [m]", ylabel=r"$\theta$ [rad]")
-    plt.savefig(f"docs/imgs/{args.controller}_states")
+    plt.savefig(f"docs/imgs/{args.controller}{context}_states")
 
     df.plot(x="time", y="theta", kind='scatter', grid=True, xlabel="Tempo [s]", ylabel=r"$\theta$ [rad]")
-    plt.savefig(f"docs/imgs/{args.controller}_theta")
+    plt.savefig(f"docs/imgs/{args.controller}{context}_theta")
 
     # plt.show()
 
