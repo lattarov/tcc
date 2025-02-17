@@ -1,11 +1,7 @@
-source ~/miniconda3/etc/profile.d/conda.sh
+uv run src/run_model.py RL
 
-conda activate tcc
+uv run src/run_model.py RL -impulse
 
-python src/run_model.py RL
+# uv run src/run_model.py PID
 
-python src/run_model.py PID
-
-python src/run_model.py RL -impulse
-
-python src/run_model.py PID -impulse
+# uv run src/run_model.py PID -impulse
