@@ -76,16 +76,23 @@ if __name__ == "__main__":
 
     # plotting results
     context = "_impulse" if args.impulse else ""
-    df.plot(x="time", y="x", kind='scatter', grid=True, xlabel="Tempo [s]", ylabel="Posição [m]")
+    x_plot = df.plot(x="time", y="x", kind='scatter', grid=True, xlabel="Tempo [s]", ylabel="Posição [m]")
     plt.savefig(f"docs/imgs/{args.controller}{context}_x")
 
-    df.plot.scatter(x='x', y="theta", c='time', grid=True, colormap='viridis', s=100, xlabel="Posição [m]", ylabel=r"$\theta$ [rad]")
+    x_theta_plot = df.plot.scatter(x='x', y="theta", c='time', grid=True, colormap='viridis', s=100, xlabel="Posição [m]", ylabel=r"$\theta$ [rad]")
     plt.savefig(f"docs/imgs/{args.controller}{context}_states")
 
-    df.plot(x="time", y="theta", kind='scatter', grid=True, xlabel="Tempo [s]", ylabel=r"$\theta$ [rad]")
+    theta_plot = df.plot(x="time", y="theta", kind='scatter', grid=True, xlabel="Tempo [s]", ylabel=r"$\theta$ [rad]", style='sci')
     plt.savefig(f"docs/imgs/{args.controller}{context}_theta")
 
-    # plt.show()
+    for plot in [x_plot, theta_plot, x_theta_plot]:
+        plt.xticks([tick for tick in plt.xticks()[0]], [
+                str(tick).replace('.', ',') for tick in plt.xticks()[0]])
+
+        plt.yticks([tick for tick in plt.yticks()[0]], [
+                str(tick).replace('.', ',') for tick in plt.yticks()[0]])
+
+    plt.show()
 
     # performance statistics
     def angle_mean_squared_error(df: pd.DataFrame) -> float:
